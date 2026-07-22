@@ -36,7 +36,7 @@ class PhotoCleanerViewModel(
         _uiState.update { it.copy(permissionDenied = false) }
         // Guard against MainActivity re-invoking this on every rotation
         // (ViewModel survives config changes, but onCreate re-checks the
-        // permission every time) — only auto-navigate on first grant.
+        // permission every time) - only auto-navigate on first grant.
         if (_uiState.value.screen != Screen.Permission) return
         if (_uiState.value.allPhotos.isNotEmpty()) {
             _uiState.update { it.copy(screen = Screen.SessionSetup) }
@@ -122,7 +122,7 @@ class PhotoCleanerViewModel(
      * Called when the user backs out of the deck early (system back-press),
      * as opposed to `advance()` reaching the natural end of the deck. Shares
      * the "anything staged?" check with `advance()` but resolves the empty
-     * case differently — bailing early with nothing staged should return to
+     * case differently - bailing early with nothing staged should return to
      * the session picker, not claim the session is "done".
      */
     fun onBackFromDeck() {
@@ -145,7 +145,7 @@ class PhotoCleanerViewModel(
     }
 
     /**
-     * Review's confirm action no longer touches MediaStore at all — it just
+     * Review's confirm action no longer touches MediaStore at all - it just
      * moves the staged photos into our own Recently Deleted staging area.
      * Nothing is actually removed from the device until "Delete Forever" is
      * used from that screen, so no system consent dialog is needed here.
@@ -276,7 +276,7 @@ class PhotoCleanerViewModel(
 
     private fun finishDelete(successCount: Int, failureCount: Int, cancelled: Boolean = false) {
         if (cancelled) {
-            // Nothing was actually deleted — stay in Recently Deleted, not
+            // Nothing was actually deleted - stay in Recently Deleted, not
             // Review (Review never touches the deleter anymore, so routing
             // there would be a dead end).
             _uiState.update {

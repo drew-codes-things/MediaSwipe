@@ -20,7 +20,7 @@ private val DarkColors = darkColorScheme(
 
 /**
  * drew-gnr.xyz has no light-mode variant, so this app doesn't offer one
- * either — always the dark red-on-black palette, regardless of system theme.
+ * either - always the dark red-on-black palette, regardless of system theme.
  */
 @Composable
 fun SwipeSwipeTheme(content: @Composable () -> Unit) {

@@ -19,7 +19,7 @@ import androidx.media3.ui.PlayerView
 import com.swipeswipe.app.R
 
 // Lint's InflateParams check can't see that layoutParams are set explicitly
-// below — there's no parent ViewGroup available to inflate against here
+// below - there's no parent ViewGroup available to inflate against here
 // since AndroidView's factory doesn't provide one.
 @SuppressLint("InflateParams")
 @Composable
@@ -49,7 +49,7 @@ fun VideoPlayer(uri: Uri, modifier: Modifier = Modifier) {
         factory = { ctx ->
             (LayoutInflater.from(ctx).inflate(R.layout.view_video_player, null) as PlayerView).apply {
                 // Inflating without a parent means the XML's match_parent
-                // layout params can't be resolved against one — set them
+                // layout params can't be resolved against one - set them
                 // explicitly instead of relying on inflate() to do it.
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,

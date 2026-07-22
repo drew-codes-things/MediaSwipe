@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 /**
  * Isolates the SDK_INT branching for permanent photo/video removal: API 30+
  * gets a single batch delete request, API 29 falls back to per-item deletes
- * with per-item system consent. Both paths are permanent — there is no
+ * with per-item system consent. Both paths are permanent - there is no
  * recoverable trash API pre-30, and we don't use the system trash on 30+
  * either (the app manages its own Recently Deleted staging area instead).
  */

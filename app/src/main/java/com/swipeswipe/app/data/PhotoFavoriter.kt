@@ -18,7 +18,7 @@ sealed interface FavoriteOutcome {
 
     data class Cancelled(val uri: Uri) : FavoriteOutcome
 
-    /** No fallback exists below API 30 — no MediaStore column to write. */
+    /** No fallback exists below API 30 - no MediaStore column to write. */
     data object Unsupported : FavoriteOutcome
 
     data class Error(val cause: Throwable) : FavoriteOutcome

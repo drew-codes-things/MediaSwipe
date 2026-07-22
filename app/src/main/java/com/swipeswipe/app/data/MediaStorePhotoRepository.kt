@@ -62,7 +62,7 @@ class MediaStorePhotoRepository(private val context: Context) : PhotoRepository 
      * DATE_TAKEN is frequently 0/missing for video files (no EXIF-equivalent
      * field), which would otherwise dump every such video to the tail of a
      * date-descending sort regardless of actual recency. DATE_ADDED is in
-     * seconds, not milliseconds, unlike DATE_TAKEN — must convert.
+     * seconds, not milliseconds, unlike DATE_TAKEN - must convert.
      */
     private fun resolveDateTakenMillis(cursor: Cursor, dateTakenColumn: Int, dateAddedColumn: Int): Long {
         val dateTaken = cursor.getLong(dateTakenColumn)
