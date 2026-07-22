@@ -23,7 +23,7 @@ maintainability, readability, and clear reasoning over cleverness.
 Understand the goal, the existing architecture, constraints, and side effects
 before writing code.
 
-## Handling ambiguity — proceed by default
+## Handling ambiguity - proceed by default
 Most ambiguity has a reasonable answer already implied by the codebase: an
 existing pattern, an existing dependency, an existing file that does something
 similar. When that's true:
@@ -96,7 +96,7 @@ where appropriate, use parameterized SQL, avoid secrets in source code, avoid
 logging credentials or tokens.
 
 Security-sensitive changes (auth, permissions, secrets, payment, PII) are
-always worth a one-line flag in the response even if no question is needed —
+always worth a one-line flag in the response even if no question is needed -
 e.g. "Note: this endpoint is now unauthenticated, confirm that's intended."
 
 ---
@@ -118,7 +118,7 @@ Examples:
 - `refactor(cache): simplify cache invalidation`
 
 Never force-push, rewrite shared history, or delete branches without asking
-first — this falls under the "destructive/hard to undo" rule above.
+first - this falls under the "destructive/hard to undo" rule above.
 
 ---
 
@@ -142,7 +142,7 @@ Before adding a dependency, prefer (in order): the standard library, an
 existing project dependency, a new dependency that is actively maintained.
 
 Adding a genuinely new dependency (not already used elsewhere in the repo) is
-worth a one-line flag, but doesn't need to block work — install it, note why,
+worth a one-line flag, but doesn't need to block work - install it, note why,
 move on.
 
 ---
@@ -159,10 +159,10 @@ Explain decisions briefly. Don't over-explain obvious code.
 
 When there are multiple valid approaches: pick the one matching existing
 convention, mention briefly why, and note the alternative in passing rather
-than presenting it as an open choice — unless it meets the "stop and ask"
+than presenting it as an open choice - unless it meets the "stop and ask"
 criteria above.
 
-State assumptions clearly and concisely, inline with the work — not as a
+State assumptions clearly and concisely, inline with the work - not as a
 separate blocking question when one isn't needed.
 
 ---
@@ -177,7 +177,7 @@ unless obsolete. Respect existing style.
 - Group related shell commands into a single call where reasonable instead of
   many small sequential ones, to reduce approval overhead.
 - Read-only commands (`ls`, `cat`, `grep`, `git status`, `git log`, etc.)
-  never require stopping to ask a clarifying question — just run them as
+  never require stopping to ask a clarifying question - just run them as
   needed to understand the codebase before acting.
 - Prefer one well-explained plan up front over incremental narrated steps,
   for tasks with more than a couple of moving parts.
@@ -187,5 +187,5 @@ unless obsolete. Respect existing style.
 # Goal
 Produce production-quality code that is correct, readable, maintainable,
 secure, and well-tested. Optimize for what a professional engineering team
-would merge — and for a workflow where reasonable defaults keep momentum,
+would merge - and for a workflow where reasonable defaults keep momentum,
 with human input reserved for decisions that actually need it.

@@ -2,7 +2,7 @@
 
 # MediaSwipe
 
-**A Tinder-style swipe app for cleaning up your phone's photo and video library — swipe to keep or stage for deletion, review before anything is touched, then send it through a Recently Deleted screen before it's gone for good.**
+**A Tinder-style swipe app for cleaning up your phone's photo and video library - swipe to keep or stage for deletion, review before anything is touched, then send it through a Recently Deleted screen before it's gone for good.**
 
 [![Kotlin](https://img.shields.io/badge/kotlin-drew?style=flat-square&logo=kotlin&logoColor=white&color=7F52FF)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/jetpack%20compose-drew?style=flat-square&logo=jetpackcompose&logoColor=white&color=4285F4)](https://developer.android.com/jetpack/compose)
@@ -19,7 +19,7 @@ MediaSwipe is a native Android app (Kotlin + Jetpack Compose) for quickly
 sorting through a phone's photo and video library. Pick how many items you
 want to go through, then swipe: left stages something for deletion, right
 keeps it. Nothing is ever touched on your device until you explicitly
-confirm — deletion is a deliberate two-step process, not an accident one
+confirm - deletion is a deliberate two-step process, not an accident one
 swipe away.
 
 An iOS (`.ipa`) version may follow at some point.
@@ -51,23 +51,23 @@ locally across app restarts, so a session can be picked back up later.
 
 ## Features
 
-- **Session sizing** — choose how many unsorted photos/videos to review in
+- **Session sizing** - choose how many unsorted photos/videos to review in
   one sitting instead of committing to the whole library at once.
-- **Two-step deletion** — swiping stages, it doesn't delete. A dedicated
+- **Two-step deletion** - swiping stages, it doesn't delete. A dedicated
   Recently Deleted screen holds everything until you either restore it or
   permanently delete it via Android's real system consent dialog
-  (`MediaStore.createDeleteRequest`) — no reliance on any particular
+  (`MediaStore.createDeleteRequest`) - no reliance on any particular
   gallery app's own trash view.
-- **Favouriting** — integrates with the real system Photos "favourite"
+- **Favouriting** - integrates with the real system Photos "favourite"
   flag (`MediaStore.createFavoriteRequest`), not just an in-app tag.
-- **Video support** — videos are mixed into the same swipe deck as photos,
+- **Video support** - videos are mixed into the same swipe deck as photos,
   sorted by recency. Tap a video's thumbnail to play it inline (via Media3
   ExoPlayer) before deciding, with proper transport controls.
-- **Sorted/unsorted tracker** — a persistent count of how much of the
+- **Sorted/unsorted tracker** - a persistent count of how much of the
   library has been reviewed, with a one-tap reset if you want to go through
   everything again.
-- **Share** — send the current photo or video to any other app.
-- **Undo** — step back through your last few swipes if you change your mind.
+- **Share** - send the current photo or video to any other app.
+- **Undo** - step back through your last few swipes if you change your mind.
 
 ---
 
