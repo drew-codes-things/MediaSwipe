@@ -29,10 +29,6 @@ fun SwipeSwipeApp(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // These two are assumed mutually exclusive: delete-confirm only fires
-    // from the Recently Deleted screen's "Delete Forever" action,
-    // favorite-confirm only from Deck, so at most one system consent
-    // dialog is ever in flight at a time.
     LaunchedEffect(uiState.pendingDeleteConfirmation) {
         uiState.pendingDeleteConfirmation?.let { onLaunchDeleteConfirmation(it.intentSender) }
     }

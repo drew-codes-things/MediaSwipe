@@ -54,12 +54,12 @@ private class FakePhotoDeleter(private val outcome: DeleteOutcome) : PhotoDelete
     override suspend fun onConfirmationResult(
         resultOk: Boolean,
         remaining: List<Uri>,
-        successSoFar: Int,
+        deletedSoFar: List<Uri>,
         failureSoFar: Int,
     ): DeleteOutcome = if (resultOk) {
-        DeleteOutcome.Done(successCount = successSoFar + remaining.size, failureCount = failureSoFar)
+        DeleteOutcome.Done(deleted = deletedSoFar + remaining, failureCount = failureSoFar)
     } else {
-        DeleteOutcome.Cancelled(successSoFar, failureSoFar + remaining.size)
+        DeleteOutcome.Cancelled(deletedSoFar, failureSoFar + remaining.size)
     }
 }
 
@@ -108,13 +108,12 @@ class PhotoCleanerViewModelTest {
 
     private fun viewModel(
         photos: List<Photo>,
-        deleter: PhotoDeleter = FakePhotoDeleter(DeleteOutcome.Done(0, 0)),
+        deleter: PhotoDeleter = FakePhotoDeleter(DeleteOutcome.Done(emptyList(), 0)),
         sortTracker: SortTracker = FakeSortTracker(),
         photoFavoriter: PhotoFavoriter = FakePhotoFavoriter(),
         pendingDeletionStore: PendingDeletionStore = FakePendingDeletionStore(),
     ) = PhotoCleanerViewModel(FakePhotoRepository(photos), deleter, sortTracker, photoFavoriter, pendingDeletionStore)
 
-    /** Gets a freshly-loaded ViewModel all the way to the swipe deck, all-unsorted session. */
     private fun readyDeck(vm: PhotoCleanerViewModel) {
         vm.onPermissionGranted()
         dispatcher.scheduler.advanceUntilIdle()
@@ -167,7 +166,7 @@ class PhotoCleanerViewModelTest {
     @Test
     fun `moving to recently deleted stages ids, delete forever passes exactly those uris`() = runTest(dispatcher) {
         val photos = listOf(fakePhoto(1), fakePhoto(2))
-        val deleter = FakePhotoDeleter(DeleteOutcome.Done(1, 0))
+        val deleter = FakePhotoDeleter(DeleteOutcome.Done(listOf(photos[0].uri), 0))
         val vm = viewModel(photos, deleter)
         readyDeck(vm)
 
@@ -202,7 +201,7 @@ class PhotoCleanerViewModelTest {
         val pendingOutcome = DeleteOutcome.NeedsConfirmation(
             intentSender = fakeIntentSender,
             remaining = listOf(photos[0].uri),
-            successSoFar = 0,
+            deletedSoFar = emptyList(),
             failureSoFar = 0,
         )
         val deleter = FakePhotoDeleter(pendingOutcome)
@@ -222,6 +221,24 @@ class PhotoCleanerViewModelTest {
         assertEquals(Screen.RecentlyDeleted, vm.uiState.value.screen)
         assertEquals(setOf(1L), vm.uiState.value.pendingDeletionIds)
         assertNull(vm.uiState.value.pendingDeleteConfirmation)
+    }
+
+    @Test
+    fun `partial delete keeps the photos that failed in recently deleted`() = runTest(dispatcher) {
+        val photos = listOf(fakePhoto(1), fakePhoto(2))
+        val deleter = FakePhotoDeleter(DeleteOutcome.Done(listOf(photos[1].uri), failureCount = 1))
+        val vm = viewModel(photos, deleter)
+        readyDeck(vm)
+
+        vm.onSwipeLeft(photos[0])
+        vm.onSwipeLeft(photos[1])
+        vm.onMoveToRecentlyDeleted()
+        vm.onDeleteForever()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(setOf(1L), vm.uiState.value.pendingDeletionIds)
+        assertEquals(1, vm.uiState.value.completionSuccessCount)
+        assertEquals(1, vm.uiState.value.completionFailureCount)
     }
 
     @Test
@@ -279,7 +296,6 @@ class PhotoCleanerViewModelTest {
         readyDeck(firstRun)
         firstRun.onSwipeRight(photos[0])
 
-        // Simulate a restart: a brand new ViewModel instance backed by the same tracker.
         val secondRun = viewModel(photos, sortTracker = sharedTracker)
         secondRun.onPermissionGranted()
         dispatcher.scheduler.advanceUntilIdle()

@@ -10,7 +10,7 @@ interface PhotoDeleter {
     suspend fun onConfirmationResult(
         resultOk: Boolean,
         remaining: List<Uri>,
-        successSoFar: Int,
+        deletedSoFar: List<Uri>,
         failureSoFar: Int,
     ): DeleteOutcome
 }
@@ -20,13 +20,15 @@ sealed interface DeleteOutcome {
     data class NeedsConfirmation(
         val intentSender: IntentSender,
         val remaining: List<Uri>,
-        val successSoFar: Int,
+        val deletedSoFar: List<Uri>,
         val failureSoFar: Int,
     ) : DeleteOutcome
 
-    data class Done(val successCount: Int, val failureCount: Int) : DeleteOutcome
+    data class Done(val deleted: List<Uri>, val failureCount: Int) : DeleteOutcome {
+        val successCount: Int get() = deleted.size
+    }
 
-    data class Cancelled(val successSoFar: Int, val failureSoFar: Int) : DeleteOutcome
+    data class Cancelled(val deletedSoFar: List<Uri>, val failureSoFar: Int) : DeleteOutcome
 
     data class Error(val cause: Throwable) : DeleteOutcome
 }

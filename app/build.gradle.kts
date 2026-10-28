@@ -23,11 +23,6 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
-            // The unshrunk debug APK is ~63MB (almost entirely unused code
-            // from the full Compose/Coil/coroutines dependency graph, not
-            // actual app logic) - shrink it so the built artifact is a
-            // realistic size to hand over. Same debug signing cert as
-            // before, so this doesn't require reinstalling over the device.
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

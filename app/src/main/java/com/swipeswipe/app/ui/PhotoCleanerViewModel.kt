@@ -34,9 +34,6 @@ class PhotoCleanerViewModel(
 
     fun onPermissionGranted() {
         _uiState.update { it.copy(permissionDenied = false) }
-        // Guard against MainActivity re-invoking this on every rotation
-        // (ViewModel survives config changes, but onCreate re-checks the
-        // permission every time) - only auto-navigate on first grant.
         if (_uiState.value.screen != Screen.Permission) return
         if (_uiState.value.allPhotos.isNotEmpty()) {
             _uiState.update { it.copy(screen = Screen.SessionSetup) }
@@ -118,13 +115,6 @@ class PhotoCleanerViewModel(
         }
     }
 
-    /**
-     * Called when the user backs out of the deck early (system back-press),
-     * as opposed to `advance()` reaching the natural end of the deck. Shares
-     * the "anything staged?" check with `advance()` but resolves the empty
-     * case differently - bailing early with nothing staged should return to
-     * the session picker, not claim the session is "done".
-     */
     fun onBackFromDeck() {
         _uiState.update { state ->
             state.copy(screen = resolveAfterLeavingDeck(Screen.SessionSetup, state.stagedForDeletion))
@@ -144,12 +134,6 @@ class PhotoCleanerViewModel(
         }
     }
 
-    /**
-     * Review's confirm action no longer touches MediaStore at all - it just
-     * moves the staged photos into our own Recently Deleted staging area.
-     * Nothing is actually removed from the device until "Delete Forever" is
-     * used from that screen, so no system consent dialog is needed here.
-     */
     fun onMoveToRecentlyDeleted() {
         val staged = _uiState.value.stagedForDeletion
         if (staged.isEmpty()) return
@@ -197,7 +181,7 @@ class PhotoCleanerViewModel(
                 photoDeleter.onConfirmationResult(
                     resultOk = resultOk,
                     remaining = pending.remaining,
-                    successSoFar = pending.successSoFar,
+                    deletedSoFar = pending.deletedSoFar,
                     failureSoFar = pending.failureSoFar,
                 ),
             )
@@ -268,28 +252,29 @@ class PhotoCleanerViewModel(
             is DeleteOutcome.NeedsConfirmation -> _uiState.update {
                 it.copy(isDeleting = false, pendingDeleteConfirmation = outcome)
             }
-            is DeleteOutcome.Done -> finishDelete(outcome.successCount, outcome.failureCount)
-            is DeleteOutcome.Cancelled -> finishDelete(outcome.successSoFar, outcome.failureSoFar, cancelled = true)
+            is DeleteOutcome.Done -> finishDelete(outcome.deleted, outcome.failureCount)
+            is DeleteOutcome.Cancelled -> finishDelete(outcome.deletedSoFar, outcome.failureSoFar, cancelled = true)
             is DeleteOutcome.Error -> _uiState.update { it.copy(isDeleting = false, pendingDeleteConfirmation = null) }
         }
     }
 
-    private fun finishDelete(successCount: Int, failureCount: Int, cancelled: Boolean = false) {
+    private fun finishDelete(deletedUris: List<Uri>, failureCount: Int, cancelled: Boolean = false) {
+        val deletedUriSet = deletedUris.toSet()
+        val deletedPhotos = _uiState.value.pendingDeletionPhotos.filter { it.uri in deletedUriSet }
+        deletedPhotos.forEach { pendingDeletionStore.unstage(it.id) }
+        val deletedIds = deletedPhotos.map { it.id }.toSet()
         if (cancelled) {
-            // Nothing was actually deleted - stay in Recently Deleted, not
-            // Review (Review never touches the deleter anymore, so routing
-            // there would be a dead end).
             _uiState.update {
-                it.copy(isDeleting = false, pendingDeleteConfirmation = null, screen = Screen.RecentlyDeleted)
+                it.copy(
+                    isDeleting = false,
+                    pendingDeleteConfirmation = null,
+                    pendingDeletionIds = it.pendingDeletionIds - deletedIds,
+                    screen = Screen.RecentlyDeleted,
+                )
             }
             return
         }
-        // Bytes-freed is an estimate: it assumes successes land at the head of
-        // the pending list, which only matters for this summary stat, not
-        // correctness of what actually got deleted.
-        val deletedPhotos = _uiState.value.pendingDeletionPhotos.take(successCount)
-        deletedPhotos.forEach { pendingDeletionStore.unstage(it.id) }
-        val deletedIds = deletedPhotos.map { it.id }.toSet()
+        val successCount = deletedPhotos.size
         _uiState.update { state ->
             state.copy(
                 isDeleting = false,

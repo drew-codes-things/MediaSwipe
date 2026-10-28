@@ -11,11 +11,6 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "AndroidPhotoFavoriter"
 
-/**
- * Both MediaStore.createFavoriteRequest and the IS_FAVORITE column were
- * added in API 30 (one level above the trash APIs) - there is no fallback
- * column to write pre-30, so favouriting is simply unsupported there.
- */
 class AndroidPhotoFavoriter(private val context: Context) : PhotoFavoriter {
 
     private val resolver get() = context.contentResolver
