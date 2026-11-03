@@ -149,6 +149,27 @@ class PhotoCleanerViewModelTest {
     }
 
     @Test
+    fun `repeated undo steps back through several swipes in order`() = runTest(dispatcher) {
+        val photos = listOf(fakePhoto(1), fakePhoto(2), fakePhoto(3))
+        val vm = viewModel(photos)
+        readyDeck(vm)
+
+        vm.onSwipeLeft(photos[0])
+        vm.onSwipeRight(photos[1])
+        vm.onUndo()
+
+        assertEquals(1, vm.uiState.value.currentIndex)
+        assertTrue(vm.uiState.value.stagedForDeletion.contains(photos[0]))
+
+        vm.onUndo()
+        assertEquals(0, vm.uiState.value.currentIndex)
+        assertTrue(vm.uiState.value.stagedForDeletion.isEmpty())
+
+        vm.onUndo()
+        assertEquals(0, vm.uiState.value.currentIndex)
+    }
+
+    @Test
     fun `unstage from review only touches staged set`() = runTest(dispatcher) {
         val photos = listOf(fakePhoto(1), fakePhoto(2))
         val vm = viewModel(photos)

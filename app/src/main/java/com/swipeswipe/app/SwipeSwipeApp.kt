@@ -52,7 +52,7 @@ fun SwipeSwipeApp(
                 uiState = uiState,
                 onSwipeLeft = viewModel::onSwipeLeft,
                 onSwipeRight = viewModel::onSwipeRight,
-                onBack = viewModel::onUndo,
+                onUndo = viewModel::onUndo,
                 onBackPressed = viewModel::onBackFromDeck,
                 onToggleFavorite = viewModel::onToggleFavorite,
                 onShare = onShare,

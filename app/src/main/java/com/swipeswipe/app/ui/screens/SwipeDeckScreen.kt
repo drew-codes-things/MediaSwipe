@@ -23,6 +23,10 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -30,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +43,7 @@ import com.swipeswipe.app.data.Photo
 import com.swipeswipe.app.ui.PhotoCleanerUiState
 import com.swipeswipe.app.ui.components.PhotoCard
 import com.swipeswipe.app.ui.components.SwipeableCard
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +51,7 @@ fun SwipeDeckScreen(
     uiState: PhotoCleanerUiState,
     onSwipeLeft: (Photo) -> Unit,
     onSwipeRight: (Photo) -> Unit,
-    onBack: () -> Unit,
+    onUndo: () -> Unit,
     onBackPressed: () -> Unit,
     onToggleFavorite: () -> Unit,
     onShare: (Photo) -> Unit,
@@ -54,6 +60,29 @@ fun SwipeDeckScreen(
     BackHandler(onBack = onBackPressed)
 
     var showFavoriteConfirm by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val keep: (Photo) -> Unit = { photo ->
+        snackbarHostState.currentSnackbarData?.dismiss()
+        onSwipeRight(photo)
+    }
+    val delete: (Photo) -> Unit = { photo ->
+        snackbarHostState.currentSnackbarData?.dismiss()
+        onSwipeLeft(photo)
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = "Marked for deletion",
+                actionLabel = "Undo",
+                duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) onUndo()
+        }
+    }
+    val undo: () -> Unit = {
+        snackbarHostState.currentSnackbarData?.dismiss()
+        onUndo()
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
@@ -98,12 +127,13 @@ fun SwipeDeckScreen(
                         SwipeableCard(
                             key = photo.id,
                             photo = photo,
-                            onSwipedLeft = { onSwipeLeft(photo) },
-                            onSwipedRight = { onSwipeRight(photo) },
+                            onSwipedLeft = { delete(photo) },
+                            onSwipedRight = { keep(photo) },
                         )
                     }
                 }
             }
+            SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
         }
 
         Row(
@@ -116,17 +146,17 @@ fun SwipeDeckScreen(
             val favoritesSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
             ActionButton(
-                label = "Back",
-                onClick = onBack,
+                label = "Undo",
+                onClick = undo,
                 enabled = uiState.currentIndex > 0,
                 primary = false,
             ) {
-                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo last swipe")
             }
 
             ActionButton(
                 label = "Delete",
-                onClick = { currentPhoto?.let(onSwipeLeft) },
+                onClick = { currentPhoto?.let(delete) },
                 enabled = currentPhoto != null,
                 primary = true,
             ) {
@@ -152,7 +182,7 @@ fun SwipeDeckScreen(
 
             ActionButton(
                 label = "Keep",
-                onClick = { currentPhoto?.let(onSwipeRight) },
+                onClick = { currentPhoto?.let(keep) },
                 enabled = currentPhoto != null,
                 primary = true,
             ) {

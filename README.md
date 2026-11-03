@@ -67,7 +67,7 @@ locally across app restarts, so a session can be picked back up later.
   library has been reviewed, with a one-tap reset if you want to go through
   everything again.
 - **Share** - send the current photo or video to any other app.
-- **Undo** - step back through your last few swipes if you change your mind.
+- **Undo** - step back through your swipes one at a time if you change your mind. After each delete swipe a short "Marked for deletion - Undo" bar appears so you can take it back straight away.
 
 ---
 
