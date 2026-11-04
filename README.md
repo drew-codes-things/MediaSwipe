@@ -53,6 +53,11 @@ locally across app restarts, so a session can be picked back up later.
 
 - **Session sizing** - choose how many unsorted photos/videos to review in
   one sitting instead of committing to the whole library at once.
+- **Pick your own** - "Choose photos to sort..." opens the system photo
+  picker (the sheet with on-device photos, Google Photos and other
+  sources) and runs a session on exactly what you picked. Cloud-only items
+  that aren't stored on the phone are skipped, since there is nothing local
+  to keep or delete.
 - **Two-step deletion** - swiping stages, it doesn't delete. A dedicated
   Recently Deleted screen holds everything until you either restore it or
   permanently delete it via Android's real system consent dialog
@@ -80,7 +85,11 @@ locally across app restarts, so a session can be picked back up later.
 
 No other permissions are requested. Deletion and favouriting both go
 through Android's standard `MediaStore` consent-dialog APIs rather than
-any broader storage access.
+any broader storage access. If access was denied with "don't ask again",
+the permission screen offers **Open app settings** so it can be granted
+from the system settings page. On Android 14+ a partial grant
+("select photos") is accepted as-is, and the photo picker works without
+any library permission at all.
 
 ---
 
@@ -93,7 +102,15 @@ cd MediaSwipe
 ```
 
 The built APK lands at `app/build/outputs/apk/debug/app-debug.apk`. Minimum
-supported Android version is 10 (API 29).
+supported Android version is 10 (API 29). The application ID is
+`com.mediaswipe.app`; release builds (`./gradlew assembleRelease`) are
+minified and resource-shrunk with R8, debug builds are not.
+
+Run the unit tests with:
+
+```bash
+./gradlew testDebugUnitTest
+```
 
 ## Download
 

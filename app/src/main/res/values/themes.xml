@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.SwipeSwipe" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.MediaSwipe" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">#121212</item>
         <item name="android:forceDarkAllowed">false</item>
     </style>

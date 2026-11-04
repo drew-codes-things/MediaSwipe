@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "SwipeSwipe"
+rootProject.name = "MediaSwipe"
 include(":app")

@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.swipeswipe.app"
+    namespace = "com.mediaswipe.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.swipeswipe.app"
+        applicationId = "com.mediaswipe.app"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
@@ -19,13 +19,13 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-        debug {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        debug {
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 
