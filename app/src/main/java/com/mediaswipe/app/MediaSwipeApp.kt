@@ -74,7 +74,7 @@ fun MediaSwipeApp(
             Screen.RecentlyDeleted -> RecentlyDeletedScreen(
                 uiState = uiState,
                 onRestore = viewModel::onRestoreFromRecentlyDeleted,
-                onDeleteForever = viewModel::onDeleteForever,
+                onMoveToPhoneBin = viewModel::onMoveToPhoneBin,
                 onBackPressed = viewModel::onBackFromRecentlyDeleted,
             )
             Screen.Completion -> CompletionScreen(

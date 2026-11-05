@@ -43,13 +43,13 @@ import com.mediaswipe.app.ui.formatBytes
 fun RecentlyDeletedScreen(
     uiState: PhotoCleanerUiState,
     onRestore: (Photo) -> Unit,
-    onDeleteForever: () -> Unit,
+    onMoveToPhoneBin: () -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BackHandler(onBack = onBackPressed)
 
-    var showDeleteForeverConfirm by remember { mutableStateOf(false) }
+    var showMoveToPhoneBinConfirm by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
@@ -92,7 +92,7 @@ fun RecentlyDeletedScreen(
         }
 
         Button(
-            onClick = { showDeleteForeverConfirm = true },
+            onClick = { showMoveToPhoneBinConfirm = true },
             enabled = uiState.pendingDeletionCount > 0 && !uiState.isDeleting,
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,31 +101,31 @@ fun RecentlyDeletedScreen(
             if (uiState.isDeleting) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
             } else {
-                Text("Delete ${uiState.pendingDeletionCount} photos forever")
+                Text("Move ${uiState.pendingDeletionCount} photos to Gallery's Recently deleted")
             }
         }
     }
 
-    if (showDeleteForeverConfirm) {
+    if (showMoveToPhoneBinConfirm) {
         AlertDialog(
-            onDismissRequest = { showDeleteForeverConfirm = false },
-            title = { Text("Delete forever?") },
+            onDismissRequest = { showMoveToPhoneBinConfirm = false },
+            title = { Text("Move to Gallery's Recently deleted?") },
             text = {
                 Text(
-                    "This permanently deletes ${uiState.pendingDeletionCount} photo(s). " +
-                        "This cannot be undone.",
+                    "This moves ${uiState.pendingDeletionCount} photo(s) to your phone's Recently deleted, " +
+                        "where you can still restore them from Gallery until the phone clears them.",
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showDeleteForeverConfirm = false
-                        onDeleteForever()
+                        showMoveToPhoneBinConfirm = false
+                        onMoveToPhoneBin()
                     },
-                ) { Text("Delete Forever") }
+                ) { Text("Move") }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteForeverConfirm = false }) { Text("Cancel") }
+                TextButton(onClick = { showMoveToPhoneBinConfirm = false }) { Text("Cancel") }
             },
         )
     }

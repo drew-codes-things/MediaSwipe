@@ -191,7 +191,7 @@ class PhotoCleanerViewModel(
         _uiState.update { it.copy(pendingDeletionIds = it.pendingDeletionIds - photo.id) }
     }
 
-    fun onDeleteForever() {
+    fun onMoveToPhoneBin() {
         val pending = _uiState.value.pendingDeletionPhotos
         if (pending.isEmpty()) return
         viewModelScope.launch {
@@ -307,7 +307,7 @@ class PhotoCleanerViewModel(
                 isDeleting = false,
                 pendingDeleteConfirmation = null,
                 pendingDeletionIds = state.pendingDeletionIds - deletedIds,
-                completionReason = CompletionReason.PERMANENTLY_DELETED,
+                completionReason = CompletionReason.MOVED_TO_PHONE_BIN,
                 completionSuccessCount = successCount,
                 completionFailureCount = failureCount,
                 completionBytesFreed = deletedPhotos.sumOf { it.sizeBytes },

@@ -6,7 +6,7 @@ import com.mediaswipe.app.data.Photo
 
 enum class Screen { Permission, SessionSetup, Deck, Review, RecentlyDeleted, Completion }
 
-enum class CompletionReason { MOVED_TO_RECENTLY_DELETED, PERMANENTLY_DELETED }
+enum class CompletionReason { MOVED_TO_RECENTLY_DELETED, MOVED_TO_PHONE_BIN }
 
 data class PhotoCleanerUiState(
     val screen: Screen = Screen.Permission,
@@ -22,7 +22,7 @@ data class PhotoCleanerUiState(
     val pendingDeleteConfirmation: DeleteOutcome.NeedsConfirmation? = null,
     val isFavoriting: Boolean = false,
     val pendingFavoriteConfirmation: FavoriteOutcome.NeedsConfirmation? = null,
-    val completionReason: CompletionReason = CompletionReason.PERMANENTLY_DELETED,
+    val completionReason: CompletionReason = CompletionReason.MOVED_TO_PHONE_BIN,
     val completionSuccessCount: Int = 0,
     val completionFailureCount: Int = 0,
     val completionBytesFreed: Long = 0,

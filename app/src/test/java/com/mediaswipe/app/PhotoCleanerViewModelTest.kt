@@ -202,13 +202,13 @@ class PhotoCleanerViewModelTest {
         assertEquals(Screen.Completion, vm.uiState.value.screen)
         assertEquals(CompletionReason.MOVED_TO_RECENTLY_DELETED, vm.uiState.value.completionReason)
 
-        vm.onDeleteForever()
+        vm.onMoveToPhoneBin()
         dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(listOf(photos[0].uri), deleter.lastRequestedUris)
         assertTrue(vm.uiState.value.pendingDeletionIds.isEmpty())
         assertEquals(Screen.Completion, vm.uiState.value.screen)
-        assertEquals(CompletionReason.PERMANENTLY_DELETED, vm.uiState.value.completionReason)
+        assertEquals(CompletionReason.MOVED_TO_PHONE_BIN, vm.uiState.value.completionReason)
     }
 
     @Test
@@ -233,7 +233,7 @@ class PhotoCleanerViewModelTest {
 
         vm.onSwipeLeft(photos[0])
         vm.onMoveToRecentlyDeleted()
-        vm.onDeleteForever()
+        vm.onMoveToPhoneBin()
         dispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(vm.uiState.value.pendingDeleteConfirmation != null)
@@ -256,7 +256,7 @@ class PhotoCleanerViewModelTest {
         vm.onSwipeLeft(photos[0])
         vm.onSwipeLeft(photos[1])
         vm.onMoveToRecentlyDeleted()
-        vm.onDeleteForever()
+        vm.onMoveToPhoneBin()
         dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(setOf(1L), vm.uiState.value.pendingDeletionIds)

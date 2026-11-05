@@ -38,8 +38,8 @@ fun CompletionScreen(
             when (reason) {
                 CompletionReason.MOVED_TO_RECENTLY_DELETED ->
                     Text("$successCount photo(s) moved to Recently Deleted.")
-                CompletionReason.PERMANENTLY_DELETED ->
-                    Text("Freed ${formatBytes(bytesFreed)} across $successCount photos.")
+                CompletionReason.MOVED_TO_PHONE_BIN ->
+                    Text("Moved $successCount photos (${formatBytes(bytesFreed)}) to Gallery's Recently deleted.")
             }
         } else {
             Text("No photos needed cleanup this round.")

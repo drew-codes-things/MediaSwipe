@@ -45,7 +45,7 @@ class AndroidPhotoDeleter(private val context: Context) : PhotoDeleter {
 
     @RequiresApi(Build.VERSION_CODES.R)
     private fun requestDeleteApi30Plus(uris: List<Uri>): DeleteOutcome = try {
-        val pendingIntent = MediaStore.createDeleteRequest(resolver, uris)
+        val pendingIntent = MediaStore.createTrashRequest(resolver, uris, true)
         DeleteOutcome.NeedsConfirmation(
             intentSender = pendingIntent.intentSender,
             remaining = uris,
