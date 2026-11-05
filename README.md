@@ -2,7 +2,7 @@
 
 # MediaSwipe
 
-**A Tinder-style swipe app for cleaning up your phone's photo and video library - swipe to keep or stage for deletion, review before anything is touched, then send it through a Recently Deleted screen before it's gone for good.**
+**A Tinder-style swipe app for cleaning up your phone's photo and video library - swipe to keep or stage for deletion, review before anything is touched, then send it through a Recently Deleted screen before it moves to your Gallery's Recently deleted.**
 
 [![Kotlin](https://img.shields.io/badge/kotlin-drew?style=flat-square&logo=kotlin&logoColor=white&color=7F52FF)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/jetpack%20compose-drew?style=flat-square&logo=jetpackcompose&logoColor=white&color=4285F4)](https://developer.android.com/jetpack/compose)
@@ -39,9 +39,9 @@ Review screen  ->  unstage anything you change your mind on
         |
 "Move to Recently Deleted"  ->  local staging only, nothing deleted yet
         |
-Recently Deleted screen  ->  restore items, or "Delete Forever"
+Recently Deleted screen  ->  restore items, or move them on
         |
-Delete Forever  ->  real system consent dialog, then permanent removal
+Move  ->  real system consent dialog, then the phone's Recently deleted
 ```
 
 Sorting progress (what's been swiped) and pending deletions both persist
@@ -53,16 +53,16 @@ locally across app restarts, so a session can be picked back up later.
 
 - **Session sizing** - choose how many unsorted photos/videos to review in
   one sitting instead of committing to the whole library at once.
-- **Pick your own** - "Choose photos to sort..." opens the system photo
-  picker (the sheet with on-device photos, Google Photos and other
-  sources) and runs a session on exactly what you picked. Cloud-only items
-  that aren't stored on the phone are skipped, since there is nothing local
-  to keep or delete.
+- **Pick your own** - "Choose photos to sort..." opens the phone's own
+  Gallery app (Google Photos only when there is no Gallery) and runs a
+  session on exactly what you picked. Cloud-only items that aren't stored
+  on the phone are skipped, since there is nothing local to keep or delete.
 - **Two-step deletion** - swiping stages, it doesn't delete. A dedicated
   Recently Deleted screen holds everything until you either restore it or
-  permanently delete it via Android's real system consent dialog
-  (`MediaStore.createDeleteRequest`) - no reliance on any particular
-  gallery app's own trash view.
+  move it to the phone's bin via Android's real system consent dialog
+  (`MediaStore.createTrashRequest`). It then shows in your Gallery's
+  Recently deleted, so you can still restore it there, and Google Photos
+  follows whatever the phone does.
 - **Favouriting** - integrates with the real system Photos "favourite"
   flag (`MediaStore.createFavoriteRequest`), not just an in-app tag.
 - **Video support** - videos are mixed into the same swipe deck as photos,
@@ -88,8 +88,9 @@ through Android's standard `MediaStore` consent-dialog APIs rather than
 any broader storage access. If access was denied with "don't ask again",
 the permission screen offers **Open app settings** so it can be granted
 from the system settings page. On Android 14+ a partial grant
-("select photos") is accepted as-is, and the photo picker works without
-any library permission at all.
+("select photos") is accepted as-is. Without any library permission,
+"Choose photos to sort..." falls back to Android's photo picker, which
+needs none.
 
 ---
 
