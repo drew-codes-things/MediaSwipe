@@ -11,6 +11,8 @@
 
 </div>
 
+![MediaSwipe's swipe deck with keep and delete buttons](screenshot.png)
+
 ---
 
 ## Overview
