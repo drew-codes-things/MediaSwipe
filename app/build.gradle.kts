@@ -11,14 +11,29 @@ android {
         applicationId = "com.mediaswipe.app"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            val passwordFile = File(System.getProperty("user.home"), ".mediaswipe-release.pass")
+            val keystoreFile = File(System.getProperty("user.home"), ".mediaswipe-release.jks")
+            if (passwordFile.exists() && keystoreFile.exists()) {
+                val password = passwordFile.readText().trim()
+                storeFile = keystoreFile
+                storePassword = password
+                keyAlias = "mediaswipe"
+                keyPassword = password
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
