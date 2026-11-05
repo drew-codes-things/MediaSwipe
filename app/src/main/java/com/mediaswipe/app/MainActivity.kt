@@ -19,8 +19,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mediaswipe.app.data.AndroidPhotoDeleter
 import com.mediaswipe.app.data.AndroidPhotoFavoriter
 import com.mediaswipe.app.data.MediaStorePhotoRepository
+import com.mediaswipe.app.data.PickFromPhotoSource
 import com.mediaswipe.app.data.SharedPreferencesPendingDeletionStore
 import com.mediaswipe.app.data.SharedPreferencesSortTracker
+import com.mediaswipe.app.data.installedPhotoSource
 import com.mediaswipe.app.ui.PhotoCleanerViewModel
 import com.mediaswipe.app.ui.theme.MediaSwipeTheme
 
@@ -62,7 +64,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val pickMediaLauncher = registerForActivityResult(
+    private val photoSourceLauncher = registerForActivityResult(PickFromPhotoSource()) { uris ->
+        viewModel.onPhotosPicked(uris)
+    }
+
+    private val systemPickerLauncher = registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(),
     ) { uris ->
         viewModel.onPhotosPicked(uris)
@@ -85,11 +91,7 @@ class MainActivity : ComponentActivity() {
                             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)),
                         )
                     },
-                    onPickPhotos = {
-                        pickMediaLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo),
-                        )
-                    },
+                    onPickPhotos = ::pickPhotos,
                     onLaunchDeleteConfirmation = { intentSender ->
                         deleteConfirmationLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
                     },
@@ -106,6 +108,15 @@ class MainActivity : ComponentActivity() {
                     },
                 )
             }
+        }
+    }
+
+    private fun pickPhotos() {
+        val source = installedPhotoSource(packageManager).takeIf { hasPhotoPermission() }
+        if (source != null) {
+            photoSourceLauncher.launch(source)
+        } else {
+            systemPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
         }
     }
 

@@ -95,7 +95,7 @@ fun SessionSetupScreen(
             Text("Choose photos to sort...")
         }
         Text(
-            "Opens the system picker (Photos, Google Photos and other sources).",
+            "Opens your phone's Gallery, or Google Photos if there is no Gallery.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

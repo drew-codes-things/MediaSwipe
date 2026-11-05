@@ -24,8 +24,8 @@ class MediaStorePhotoRepository(private val context: Context) : PhotoRepository 
 
     private fun resolvePickedItem(picked: Uri): Photo? {
         if (picked.authority != MediaStore.AUTHORITY) {
-            val mediaUri = runCatching { MediaStore.getMediaUri(context, picked) }.getOrNull() ?: return null
-            return resolvePickedItem(mediaUri)
+            val mediaUri = runCatching { MediaStore.getMediaUri(context, picked) }.getOrNull()
+            return mediaUri?.let(::resolvePickedItem) ?: findByNameAndSize(picked)
         }
         val segments = picked.pathSegments
         if (segments.firstOrNull() != "picker") {
@@ -42,6 +42,14 @@ class MediaStorePhotoRepository(private val context: Context) : PhotoRepository 
             if (candidate.displayName == name && candidate.sizeBytes == size) return candidate
         }
         return null
+    }
+
+    private fun findByNameAndSize(picked: Uri): Photo? {
+        val (name, size) = openableNameAndSize(picked) ?: return null
+        val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.SIZE} = ?"
+        val arguments = arrayOf(name, size.toString())
+        return queryMedia(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, isVideo = false, selection, arguments).firstOrNull()
+            ?: queryMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, isVideo = true, selection, arguments).firstOrNull()
     }
 
     private fun openableNameAndSize(uri: Uri): Pair<String, Long>? {
