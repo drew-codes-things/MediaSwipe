@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mediaswipe.app.data.Photo
 import com.mediaswipe.app.ui.PhotoCleanerViewModel
@@ -38,7 +39,11 @@ fun MediaSwipeApp(
         uiState.pendingFavoriteConfirmation?.let { onLaunchFavoriteConfirmation(it.intentSender) }
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    ) {
         when (uiState.screen) {
             Screen.Permission -> PermissionScreen(
                 onRequestPermission = onRequestPermission,
