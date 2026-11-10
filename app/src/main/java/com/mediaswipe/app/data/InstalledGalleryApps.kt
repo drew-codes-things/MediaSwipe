@@ -4,13 +4,10 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 
-const val IMAGE_MIME_TYPE = "image/*"
-const val VIDEO_MIME_TYPE = "video/*"
-
 fun pickPhotosIntent(): Intent = Intent(Intent.ACTION_GET_CONTENT)
     .addCategory(Intent.CATEGORY_OPENABLE)
-    .setType(IMAGE_MIME_TYPE)
-    .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(IMAGE_MIME_TYPE, VIDEO_MIME_TYPE))
+    .setType(GALLERY_REQUEST_TYPE)
+    .putExtra(Intent.EXTRA_MIME_TYPES, GALLERY_MIME_TYPES.toTypedArray())
     .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 
 fun installedPhotoSource(packageManager: PackageManager): String? {

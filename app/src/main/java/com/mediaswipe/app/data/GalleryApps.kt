@@ -1,6 +1,8 @@
 package com.mediaswipe.app.data
 
 const val GOOGLE_PHOTOS_PACKAGE = "com.google.android.apps.photos"
+const val GALLERY_REQUEST_TYPE = "*/*"
+val GALLERY_MIME_TYPES = listOf("image/*", "video/*")
 
 data class GalleryApp(val packageName: String, val isSystemApp: Boolean)
 
