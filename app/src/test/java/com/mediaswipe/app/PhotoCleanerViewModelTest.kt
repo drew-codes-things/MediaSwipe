@@ -430,4 +430,39 @@ class PhotoCleanerViewModelTest {
         assertTrue(awaitingReview.pendingIds().isEmpty())
         assertEquals(setOf(1L, 2L), pending.pendingIds())
     }
+
+    @Test
+    fun `a keep swipe takes a photo out of the delete queue`() = runTest(dispatcher) {
+        val photos = listOf(fakePhoto(1), fakePhoto(2))
+        val pending = FakePendingDeletionStore(mutableSetOf(1L))
+        val deleter = FakePhotoDeleter(DeleteOutcome.Done(emptyList(), 0))
+        val vm = viewModel(photos, deleter = deleter, sortTracker = FakeSortTracker(mutableSetOf(1L)), pendingDeletionStore = pending)
+        vm.onPermissionGranted()
+        dispatcher.scheduler.advanceUntilIdle()
+        vm.onResetSortingProgress()
+        vm.onSessionSizeChosen(null)
+
+        vm.onSwipeRight(photos[0])
+
+        assertFalse(vm.uiState.value.pendingDeletionIds.contains(1L))
+        assertTrue(pending.pendingIds().isEmpty())
+        vm.onOpenRecentlyDeleted()
+        vm.onMoveToPhoneBin()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertNull(deleter.lastRequestedUris)
+    }
+
+    @Test
+    fun `undoing that keep swipe puts the photo back in the delete queue`() = runTest(dispatcher) {
+        val photos = listOf(fakePhoto(1), fakePhoto(2))
+        val pending = FakePendingDeletionStore(mutableSetOf(1L))
+        val vm = viewModel(photos, pendingDeletionStore = pending)
+        readyDeck(vm)
+
+        vm.onSwipeRight(photos[0])
+        vm.onUndo()
+
+        assertEquals(setOf(1L), vm.uiState.value.pendingDeletionIds)
+        assertEquals(setOf(1L), pending.pendingIds())
+    }
 }

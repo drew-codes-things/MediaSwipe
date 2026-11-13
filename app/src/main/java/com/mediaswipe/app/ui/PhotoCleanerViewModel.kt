@@ -29,7 +29,7 @@ class PhotoCleanerViewModel(
     private val _uiState = MutableStateFlow(PhotoCleanerUiState())
     val uiState: StateFlow<PhotoCleanerUiState> = _uiState.asStateFlow()
 
-    private data class SwipeRecord(val photo: Photo, val staged: Boolean)
+    private data class SwipeRecord(val photo: Photo, val staged: Boolean, val wasQueuedForDeletion: Boolean)
 
     private val swipeHistory = ArrayDeque<SwipeRecord>()
 
@@ -124,15 +124,19 @@ class PhotoCleanerViewModel(
     fun onSwipeLeft(photo: Photo) = advance(photo, stage = true)
 
     private fun advance(photo: Photo, stage: Boolean) {
-        swipeHistory.addLast(SwipeRecord(photo, stage))
+        val wasQueued = photo.id in _uiState.value.pendingDeletionIds
+        val keptFromQueue = wasQueued && !stage
+        swipeHistory.addLast(SwipeRecord(photo, stage, wasQueued))
         sortTracker.markSorted(photo.id)
         if (stage) awaitingReviewStore.stage(photo.id)
+        if (keptFromQueue) pendingDeletionStore.unstage(photo.id)
         _uiState.update { state ->
             val staged = if (stage) state.stagedForDeletion + photo else state.stagedForDeletion
             val nextIndex = state.currentIndex + 1
             val deckExhausted = nextIndex >= state.sessionPhotos.size
             state.copy(
                 stagedForDeletion = staged,
+                pendingDeletionIds = if (keptFromQueue) state.pendingDeletionIds - photo.id else state.pendingDeletionIds,
                 sortedPhotoIds = state.sortedPhotoIds + photo.id,
                 currentIndex = nextIndex,
                 screen = if (deckExhausted) resolveAfterLeavingDeck(Screen.Completion, staged) else state.screen,
@@ -142,12 +146,15 @@ class PhotoCleanerViewModel(
 
     fun onUndo() {
         val last = swipeHistory.removeLastOrNull() ?: return
+        val requeue = last.wasQueuedForDeletion && !last.staged
         sortTracker.markUnsorted(last.photo.id)
         if (last.staged) awaitingReviewStore.unstage(last.photo.id)
+        if (requeue) pendingDeletionStore.stage(last.photo.id)
         _uiState.update { state ->
             val staged = if (last.staged) state.stagedForDeletion - last.photo else state.stagedForDeletion
             state.copy(
                 stagedForDeletion = staged,
+                pendingDeletionIds = if (requeue) state.pendingDeletionIds + last.photo.id else state.pendingDeletionIds,
                 sortedPhotoIds = state.sortedPhotoIds - last.photo.id,
                 currentIndex = (state.currentIndex - 1).coerceAtLeast(0),
                 screen = Screen.Deck,
