@@ -97,7 +97,7 @@ class PhotoCleanerViewModel(
                 if (picked.isEmpty()) {
                     state.copy(
                         isLoadingPhotos = false,
-                        pickerNotice = "None of the picked items are stored on this device, so there is nothing here to keep or delete.",
+                        pickerNotice = "None of the picked items could be matched to one file on this device, so there is nothing here to keep or delete.",
                     )
                 } else {
                     val known = state.allPhotos.map { it.id }.toSet()
@@ -106,7 +106,7 @@ class PhotoCleanerViewModel(
                         allPhotos = state.allPhotos + picked.filter { it.id !in known },
                         sessionPhotos = picked,
                         currentIndex = 0,
-                        pickerNotice = if (skipped > 0) "$skipped picked item(s) aren't on this device and were skipped." else null,
+                        pickerNotice = if (skipped > 0) "$skipped picked item(s) aren't on this device, or match more than one file, and were skipped." else null,
                         screen = Screen.Deck,
                     )
                 }

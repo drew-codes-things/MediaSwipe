@@ -48,8 +48,9 @@ class MediaStorePhotoRepository(private val context: Context) : PhotoRepository 
         val (name, size) = openableNameAndSize(picked) ?: return null
         val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.SIZE} = ?"
         val arguments = arrayOf(name, size.toString())
-        return queryMedia(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, isVideo = false, selection, arguments).firstOrNull()
-            ?: queryMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, isVideo = true, selection, arguments).firstOrNull()
+        val candidates = queryMedia(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, isVideo = false, selection, arguments) +
+            queryMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, isVideo = true, selection, arguments)
+        return candidates.singleOrNull()
     }
 
     private fun openableNameAndSize(uri: Uri): Pair<String, Long>? {
