@@ -114,7 +114,8 @@ class PhotoCleanerViewModelTest {
         sortTracker: SortTracker = FakeSortTracker(),
         photoFavoriter: PhotoFavoriter = FakePhotoFavoriter(),
         pendingDeletionStore: PendingDeletionStore = FakePendingDeletionStore(),
-    ) = PhotoCleanerViewModel(FakePhotoRepository(photos), deleter, sortTracker, photoFavoriter, pendingDeletionStore)
+        awaitingReviewStore: PendingDeletionStore = FakePendingDeletionStore(),
+    ) = PhotoCleanerViewModel(FakePhotoRepository(photos), deleter, sortTracker, photoFavoriter, pendingDeletionStore, awaitingReviewStore)
 
     private fun readyDeck(vm: PhotoCleanerViewModel) {
         vm.onPermissionGranted()
@@ -376,5 +377,57 @@ class PhotoCleanerViewModelTest {
         vm.onSwipeLeft(photos[0])
         vm.onBackFromDeck()
         assertEquals(Screen.Review, vm.uiState.value.screen)
+    }
+
+    @Test
+    fun `delete swipes survive a restart before the review step`() = runTest(dispatcher) {
+        val photos = listOf(fakePhoto(1), fakePhoto(2), fakePhoto(3))
+        val sortTracker = FakeSortTracker()
+        val awaitingReview = FakePendingDeletionStore()
+
+        val firstRun = viewModel(photos, sortTracker = sortTracker, awaitingReviewStore = awaitingReview)
+        readyDeck(firstRun)
+        firstRun.onSwipeLeft(photos[0])
+        firstRun.onSwipeRight(photos[1])
+
+        val secondRun = viewModel(photos, sortTracker = sortTracker, awaitingReviewStore = awaitingReview)
+        secondRun.onPermissionGranted()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(setOf(photos[0]), secondRun.uiState.value.stagedForDeletion)
+        assertEquals(Screen.Review, secondRun.uiState.value.screen)
+    }
+
+    @Test
+    fun `undone and unstaged delete swipes are not brought back after a restart`() = runTest(dispatcher) {
+        val photos = listOf(fakePhoto(1), fakePhoto(2), fakePhoto(3))
+        val awaitingReview = FakePendingDeletionStore()
+
+        val firstRun = viewModel(photos, awaitingReviewStore = awaitingReview)
+        readyDeck(firstRun)
+        firstRun.onSwipeLeft(photos[0])
+        firstRun.onUndo()
+        firstRun.onSwipeLeft(photos[0])
+        firstRun.onSwipeLeft(photos[1])
+        firstRun.onBackFromDeck()
+        firstRun.onUnstageFromReview(photos[0])
+
+        assertEquals(setOf(2L), awaitingReview.pendingIds())
+    }
+
+    @Test
+    fun `moving to recently deleted empties the saved review list`() = runTest(dispatcher) {
+        val photos = listOf(fakePhoto(1), fakePhoto(2))
+        val pending = FakePendingDeletionStore()
+        val awaitingReview = FakePendingDeletionStore()
+        val vm = viewModel(photos, pendingDeletionStore = pending, awaitingReviewStore = awaitingReview)
+        readyDeck(vm)
+
+        vm.onSwipeLeft(photos[0])
+        vm.onSwipeLeft(photos[1])
+        vm.onMoveToRecentlyDeleted()
+
+        assertTrue(awaitingReview.pendingIds().isEmpty())
+        assertEquals(setOf(1L, 2L), pending.pendingIds())
     }
 }

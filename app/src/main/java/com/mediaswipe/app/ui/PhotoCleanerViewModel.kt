@@ -23,6 +23,7 @@ class PhotoCleanerViewModel(
     private val sortTracker: SortTracker,
     private val photoFavoriter: PhotoFavoriter,
     private val pendingDeletionStore: PendingDeletionStore,
+    private val awaitingReviewStore: PendingDeletionStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PhotoCleanerUiState())
@@ -52,16 +53,26 @@ class PhotoCleanerViewModel(
             val photos = photoRepository.loadPhotos()
             val sortedIds = sortTracker.sortedIds()
             val pendingIds = pendingDeletionStore.pendingIds()
+            val awaitingReview = restoreAwaitingReview(photos)
             _uiState.update {
                 it.copy(
                     allPhotos = photos,
                     sortedPhotoIds = sortedIds,
                     pendingDeletionIds = pendingIds,
+                    stagedForDeletion = awaitingReview,
                     isLoadingPhotos = false,
-                    screen = Screen.SessionSetup,
+                    screen = if (awaitingReview.isEmpty()) Screen.SessionSetup else Screen.Review,
                 )
             }
         }
+    }
+
+    private fun restoreAwaitingReview(photos: List<Photo>): Set<Photo> {
+        val savedIds = awaitingReviewStore.pendingIds()
+        val stillPresent = photos.filter { it.id in savedIds }.toCollection(linkedSetOf())
+        val goneIds = savedIds - stillPresent.map { it.id }.toSet()
+        goneIds.forEach { awaitingReviewStore.unstage(it) }
+        return stillPresent
     }
 
     fun onSessionSizeChosen(size: Int?) {
@@ -115,6 +126,7 @@ class PhotoCleanerViewModel(
     private fun advance(photo: Photo, stage: Boolean) {
         swipeHistory.addLast(SwipeRecord(photo, stage))
         sortTracker.markSorted(photo.id)
+        if (stage) awaitingReviewStore.stage(photo.id)
         _uiState.update { state ->
             val staged = if (stage) state.stagedForDeletion + photo else state.stagedForDeletion
             val nextIndex = state.currentIndex + 1
@@ -131,6 +143,7 @@ class PhotoCleanerViewModel(
     fun onUndo() {
         val last = swipeHistory.removeLastOrNull() ?: return
         sortTracker.markUnsorted(last.photo.id)
+        if (last.staged) awaitingReviewStore.unstage(last.photo.id)
         _uiState.update { state ->
             val staged = if (last.staged) state.stagedForDeletion - last.photo else state.stagedForDeletion
             state.copy(
@@ -152,6 +165,7 @@ class PhotoCleanerViewModel(
         if (staged.isEmpty()) emptyDestination else Screen.Review
 
     fun onUnstageFromReview(photo: Photo) {
+        awaitingReviewStore.unstage(photo.id)
         _uiState.update { state ->
             val staged = state.stagedForDeletion - photo
             state.copy(
@@ -164,7 +178,10 @@ class PhotoCleanerViewModel(
     fun onMoveToRecentlyDeleted() {
         val staged = _uiState.value.stagedForDeletion
         if (staged.isEmpty()) return
-        staged.forEach { pendingDeletionStore.stage(it.id) }
+        staged.forEach {
+            pendingDeletionStore.stage(it.id)
+            awaitingReviewStore.unstage(it.id)
+        }
         _uiState.update { state ->
             state.copy(
                 stagedForDeletion = emptySet(),

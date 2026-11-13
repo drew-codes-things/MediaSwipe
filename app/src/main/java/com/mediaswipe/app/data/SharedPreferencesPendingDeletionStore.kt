@@ -3,9 +3,12 @@ package com.mediaswipe.app.data
 import android.content.Context
 import androidx.core.content.edit
 
-class SharedPreferencesPendingDeletionStore(context: Context) : PendingDeletionStore {
+class SharedPreferencesPendingDeletionStore(
+    context: Context,
+    prefsName: String = PENDING_DELETION_PREFS,
+) : PendingDeletionStore {
 
-    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
 
     override fun pendingIds(): Set<Long> =
         prefs.getStringSet(KEY_PENDING_IDS, emptySet())
@@ -23,8 +26,9 @@ class SharedPreferencesPendingDeletionStore(context: Context) : PendingDeletionS
         prefs.edit { putStringSet(KEY_PENDING_IDS, current - id.toString()) }
     }
 
-    private companion object {
-        const val PREFS_NAME = "pending_deletion"
-        const val KEY_PENDING_IDS = "pending_ids"
+    companion object {
+        const val PENDING_DELETION_PREFS = "pending_deletion"
+        const val AWAITING_REVIEW_PREFS = "awaiting_review"
+        private const val KEY_PENDING_IDS = "pending_ids"
     }
 }

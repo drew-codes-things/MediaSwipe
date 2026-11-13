@@ -37,6 +37,10 @@ class MainActivity : ComponentActivity() {
                     sortTracker = SharedPreferencesSortTracker(applicationContext),
                     photoFavoriter = AndroidPhotoFavoriter(applicationContext),
                     pendingDeletionStore = SharedPreferencesPendingDeletionStore(applicationContext),
+                    awaitingReviewStore = SharedPreferencesPendingDeletionStore(
+                        applicationContext,
+                        SharedPreferencesPendingDeletionStore.AWAITING_REVIEW_PREFS,
+                    ),
                 )
             }
         }
