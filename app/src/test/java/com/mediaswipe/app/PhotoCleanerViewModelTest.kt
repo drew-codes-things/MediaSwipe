@@ -465,4 +465,10 @@ class PhotoCleanerViewModelTest {
         assertEquals(setOf(1L), vm.uiState.value.pendingDeletionIds)
         assertEquals(setOf(1L), pending.pendingIds())
     }
+
+    @Test
+    fun `app data is left out of device backups because photo ids differ between phones`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        assertEquals(0, context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP)
+    }
 }
