@@ -23,8 +23,8 @@ class UpdateNoticeViewModel(
 
     fun checkForUpdate() {
         viewModelScope.launch {
-            val available = withContext(network) { notice.checkIfDue() }
-            _state.update { it.copy(availableVersion = available) }
+            withContext(network) { notice.checkIfDue() }
+            _state.update { it.copy(availableVersion = notice.availableVersion()) }
         }
     }
 
