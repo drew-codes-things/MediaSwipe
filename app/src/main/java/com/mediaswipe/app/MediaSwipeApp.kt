@@ -2,6 +2,7 @@ package com.mediaswipe.app
 
 import android.content.IntentSender
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -9,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mediaswipe.app.data.Photo
 import com.mediaswipe.app.ui.PhotoCleanerViewModel
@@ -19,10 +21,15 @@ import com.mediaswipe.app.ui.screens.RecentlyDeletedScreen
 import com.mediaswipe.app.ui.screens.ReviewScreen
 import com.mediaswipe.app.ui.screens.SessionSetupScreen
 import com.mediaswipe.app.ui.screens.SwipeDeckScreen
+import com.mediaswipe.app.update.UpdateBanner
+import com.mediaswipe.app.update.UpdateCheckSetting
+import com.mediaswipe.app.update.UpdateNoticeViewModel
 
 @Composable
 fun MediaSwipeApp(
     viewModel: PhotoCleanerViewModel,
+    updateViewModel: UpdateNoticeViewModel,
+    onOpenReleasePage: () -> Unit,
     onRequestPermission: () -> Unit,
     onOpenAppSettings: () -> Unit,
     onPickPhotos: () -> Unit,
@@ -31,6 +38,7 @@ fun MediaSwipeApp(
     onShare: (Photo) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val updateState by updateViewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.pendingDeleteConfirmation) {
         uiState.pendingDeleteConfirmation?.let { onLaunchDeleteConfirmation(it.intentSender) }
@@ -56,6 +64,20 @@ fun MediaSwipeApp(
                 onResetProgress = viewModel::onResetSortingProgress,
                 onOpenRecentlyDeleted = viewModel::onOpenRecentlyDeleted,
                 onPickPhotos = onPickPhotos,
+                updateNotice = {
+                    UpdateBanner(
+                        version = updateState.availableVersion,
+                        onOpen = onOpenReleasePage,
+                        onDismiss = updateViewModel::onDismiss,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                    )
+                },
+                updateSetting = {
+                    UpdateCheckSetting(
+                        checksEnabled = updateState.checksEnabled,
+                        onChange = updateViewModel::onChecksChanged,
+                    )
+                },
             )
             Screen.Deck -> SwipeDeckScreen(
                 uiState = uiState,

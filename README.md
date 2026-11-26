@@ -74,6 +74,14 @@ locally across app restarts, so a session can be picked back up later.
   library has been reviewed, with a one-tap reset if you want to go through
   everything again.
 - **Share** - send the current photo or video to any other app.
+- **Update notice** - shortly after opening, and then at most once a day,
+  MediaSwipe asks GitHub for its latest release and shows "Version X is
+  available" when it is newer. Open takes you to the release page; nothing
+  is downloaded or installed. Dismiss hides that version only, and the
+  "Check for new versions" switch turns the check off. This is the only
+  thing in the app that uses the network: it sends no photos, no ids and
+  nothing about your library, and a unit test fails if any other code
+  reaches for the network.
 - **Undo** - step back through your swipes one at a time if you change your mind. After each delete swipe a short "Marked for deletion - Undo" bar appears so you can take it back straight away.
 
 ---
@@ -84,6 +92,7 @@ locally across app restarts, so a session can be picked back up later.
 |---|---|
 | `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` (API 33+) or `READ_EXTERNAL_STORAGE` (below) | Read the photo/video library to build the swipe deck |
 | `READ_MEDIA_VISUAL_USER_SELECTED` (API 34+) | Support partial library access grants |
+| `INTERNET` | Only the update check: one request to GitHub for the latest MediaSwipe release |
 
 No other permissions are requested. Deletion and favouriting both go
 through Android's standard `MediaStore` consent-dialog APIs rather than

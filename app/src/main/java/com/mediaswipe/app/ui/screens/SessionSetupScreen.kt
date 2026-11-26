@@ -38,6 +38,8 @@ fun SessionSetupScreen(
     onOpenRecentlyDeleted: () -> Unit,
     onPickPhotos: () -> Unit,
     modifier: Modifier = Modifier,
+    updateNotice: @Composable () -> Unit = {},
+    updateSetting: @Composable () -> Unit = {},
 ) {
     var showResetConfirm by remember { mutableStateOf(false) }
 
@@ -50,6 +52,7 @@ fun SessionSetupScreen(
     ) {
         Text(text = "MediaSwipe", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(24.dp))
+        updateNotice()
 
         if (uiState.isLoadingPhotos) {
             CircularProgressIndicator()
@@ -117,6 +120,9 @@ fun SessionSetupScreen(
                 Text("Reset sorting progress")
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        updateSetting()
     }
 
     if (showResetConfirm) {

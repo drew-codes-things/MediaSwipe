@@ -1,12 +1,15 @@
 package com.mediaswipe.app
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
@@ -14,6 +17,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mediaswipe.app.data.AndroidPhotoDeleter
@@ -25,6 +29,12 @@ import com.mediaswipe.app.data.SharedPreferencesSortTracker
 import com.mediaswipe.app.data.installedPhotoSource
 import com.mediaswipe.app.ui.PhotoCleanerViewModel
 import com.mediaswipe.app.ui.theme.MediaSwipeTheme
+import com.mediaswipe.app.update.LATEST_RELEASE_API
+import com.mediaswipe.app.update.LatestReleaseSource
+import com.mediaswipe.app.update.RELEASES_PAGE
+import com.mediaswipe.app.update.UpdateNotice
+import com.mediaswipe.app.update.UpdateNoticeViewModel
+import com.mediaswipe.app.update.UpdatePreferences
 
 class MainActivity : ComponentActivity() {
 
@@ -40,6 +50,22 @@ class MainActivity : ComponentActivity() {
                     awaitingReviewStore = SharedPreferencesPendingDeletionStore(
                         applicationContext,
                         SharedPreferencesPendingDeletionStore.AWAITING_REVIEW_PREFS,
+                    ),
+                )
+            }
+        }
+    }
+
+    private val updateViewModel: UpdateNoticeViewModel by viewModels {
+        viewModelFactory {
+            initializer {
+                val version = installedVersion()
+                UpdateNoticeViewModel(
+                    UpdateNotice(
+                        currentVersion = version,
+                        store = UpdatePreferences(applicationContext),
+                        fetchLatestVersion = LatestReleaseSource(LATEST_RELEASE_API, "MediaSwipe/$version")::latestVersion,
+                        log = { Log.i(LOG_TAG, it) },
                     ),
                 )
             }
@@ -89,6 +115,8 @@ class MainActivity : ComponentActivity() {
             MediaSwipeTheme {
                 MediaSwipeApp(
                     viewModel = viewModel,
+                    updateViewModel = updateViewModel,
+                    onOpenReleasePage = ::openReleasePage,
                     onRequestPermission = { permissionLauncher.launch(requiredPhotoPermissions()) },
                     onOpenAppSettings = {
                         startActivity(
@@ -112,6 +140,21 @@ class MainActivity : ComponentActivity() {
                     },
                 )
             }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        updateViewModel.checkForUpdate()
+    }
+
+    private fun installedVersion(): String = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
+
+    private fun openReleasePage() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, RELEASES_PAGE.toUri()))
+        } catch (error: ActivityNotFoundException) {
+            Toast.makeText(this, "No browser found to open the release page", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -147,3 +190,5 @@ class MainActivity : ComponentActivity() {
         else -> arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
     }
 }
+
+private const val LOG_TAG = "MediaSwipe"
