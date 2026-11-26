@@ -19,6 +19,10 @@ private val NETWORK_USE = listOf(
     Regex("""(?i)\b(okhttp|retrofit|ktor|volley|cronet|grpc)\b"""),
     Regex("""(?i)\b(https?|wss?|ftp)://"""),
 )
+private val VIDEO_PLAYER = File(MAIN_SOURCES, "java/com/mediaswipe/app/ui/components/VideoPlayer.kt")
+private val PLAYER_BUILDER = Regex("""ExoPlayer\.Builder\(""")
+private val CONTENT_ONLY_SOURCE_FACTORY = Regex("""setMediaSourceFactory\(\s*DefaultMediaSourceFactory\(\s*DataSource\.Factory\s*\{\s*ContentDataSource\(""")
+private val DEFAULT_NETWORK_AWARE_SOURCES = Regex("""\b(DefaultDataSource|DefaultHttpDataSource|OkHttpDataSource|CronetDataSource)\b""")
 private val NETWORK_LIBRARIES = Regex("""(?i)(okhttp|retrofit|ktor|volley|cronet|grpc|coil-network|media3-datasource-(okhttp|cronet))""")
 
 class NetworkUseTest {
@@ -55,5 +59,14 @@ class NetworkUseTest {
     fun noNetworkLibraryIsADependency() {
         val found = BUILD_FILES.flatMap { file -> file.readLines().filter { NETWORK_LIBRARIES.containsMatchIn(it) } }
         assertEquals(emptyList<String>(), found)
+    }
+
+    @Test
+    fun everyPlayerReadsOnlyContentUris() {
+        val playerFiles = MAIN_SOURCES.walkTopDown().filter { it.isFile && it.extension == "kt" && PLAYER_BUILDER.containsMatchIn(it.readText()) }.toList()
+        assertEquals(listOf(VIDEO_PLAYER.path), playerFiles.map { it.path })
+        val text = VIDEO_PLAYER.readText()
+        assertTrue("the player is not built over a content-only data source", CONTENT_ONLY_SOURCE_FACTORY.containsMatchIn(text))
+        assertEquals(emptyList<String>(), DEFAULT_NETWORK_AWARE_SOURCES.findAll(text).map { it.value }.toList())
     }
 }
